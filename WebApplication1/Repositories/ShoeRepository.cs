@@ -70,24 +70,19 @@ namespace Store99.Repositories
             return _context.Shoes.Where(s => s.Name == name).FirstOrDefault();
         }
 
-        public ShoeDto CreateShoe(CreateShoeDto createShoeDto)
+        public bool CreateShoe(CreateShoeDto createShoeDto)
         {
-            System.Diagnostics.Debug.WriteLine(createShoeDto);
             try
             {
                 var mapDto = _mapper.Map<Shoe>(createShoeDto);
                 // esto devuelve la entidad, no el objeto en sí
                 var newShoe = _context.Add(mapDto);
                 SaveRecentChanges();
-                // accedemos a la entidad
-                int newShoeId = newShoe.Entity.Id;
-                Shoe shoeCreated = GetShoeById(newShoeId);
-                var newShoeMapped = _mapper.Map<ShoeDto>(shoeCreated);
-                return newShoeMapped;
+                return true;
             }
-            catch (Exception)
+            catch
             {
-                throw;
+                return false;
             }
             
         }

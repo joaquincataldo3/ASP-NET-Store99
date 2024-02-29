@@ -6,6 +6,7 @@ using Store99.Dto.Shoe;
 using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using System.Net;
 
 namespace Store99.Controllers
 {
@@ -18,12 +19,14 @@ namespace Store99.Controllers
         // utilizamos interfaz de shoe repository
         private readonly IShoeRepository shoeRepository;
         private readonly Cloudinary cloudinary;
+        private readonly IShoeService shoeService;
 
         // instanciamos el constructor e inyectamos el repositorio
-        public ShoeController(IShoeRepository shoeRepository, Cloudinary cloudinary)
+        public ShoeController(IShoeRepository shoeRepository, Cloudinary cloudinary, IShoeService shoeService)
         {
             this.shoeRepository = shoeRepository;
             this.cloudinary = cloudinary;
+            this.shoeService = shoeService;
         }
 
         // rutas
@@ -61,7 +64,7 @@ namespace Store99.Controllers
 
 
         [HttpGet("by-category/{categoryId}")]
-        [ProducesResponseType(200, Type=typeof(ICollection<ShoeDto>))]
+        [ProducesResponseType(200, Type = typeof(ICollection<ShoeDto>))]
         [ProducesResponseType(500)]
         public IActionResult GetShoesByCategory(int categoryId)
         {
@@ -96,7 +99,7 @@ namespace Store99.Controllers
             {
                 return StatusCode(500, "Internal server error"); ;
             }
-            
+
         }
 
 
@@ -107,28 +110,16 @@ namespace Store99.Controllers
         [ProducesResponseType(500)]
         public IActionResult CreateShoe([FromBody] CreateShoeDto createShoeDto)
         {
-            if (!ModelState.IsValid)
+            IShoeServiceResponse response = shoeService.ValidateShoeCreation(createShoeDto);
+            if (response.StatusCode == HttpStatusCode.Conflict)
             {
-                return BadRequest(ModelState);
+                return BadRequest(response);
             }
-            string shoeName = createShoeDto.Name.ToLower();
-            Shoe? shoeAlreadyExists = shoeRepository.GetShoeByName(shoeName);
-            if (shoeAlreadyExists != null)
+            if(response.StatusCode == HttpStatusCode.InternalServerError)
             {
-                return Conflict("Shoe already exists");
+                return StatusCode(500);
             }
-            try
-            {//
-                ShoeDto createNewShoe = shoeRepository.CreateShoe(createShoeDto);
-                ShoeDto shoeCreated = createNewShoe;
-                return Ok(shoeCreated);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server Error");
-            }
-            
-            
+            return Ok(response);
         }
     }
 
