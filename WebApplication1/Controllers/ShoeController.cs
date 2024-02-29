@@ -1,11 +1,11 @@
-﻿using Store99.Repositories;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Store99.Models;
 using Store99.Interfaces;
 using Store99.Dto.Sho;
 using Store99.Dto.Shoe;
 using AutoMapper;
-using Newtonsoft.Json;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace Store99.Controllers
 {
@@ -17,13 +17,13 @@ namespace Store99.Controllers
     {
         // utilizamos interfaz de shoe repository
         private readonly IShoeRepository shoeRepository;
-        private readonly IMapper mapper;
+        private readonly Cloudinary cloudinary;
 
         // instanciamos el constructor e inyectamos el repositorio
-        public ShoeController(IShoeRepository shoeRepository, IMapper mapper)
+        public ShoeController(IShoeRepository shoeRepository, Cloudinary cloudinary)
         {
             this.shoeRepository = shoeRepository;
-            this.mapper = mapper;
+            this.cloudinary = cloudinary;
         }
 
         // rutas
@@ -105,7 +105,7 @@ namespace Store99.Controllers
         [ProducesResponseType(409)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public IActionResult CreateShoe([FromBody] CreateShoeDto createShoeDto)
+        public async Task<IActionResult> CreateShoe([FromBody] CreateShoeDto createShoeDto)
         {
             if (!ModelState.IsValid)
             {
@@ -121,8 +121,6 @@ namespace Store99.Controllers
             {
                 ShoeDto createNewShoe = shoeRepository.CreateShoe(createShoeDto);
                 ShoeDto shoeCreated = createNewShoe;
-                System.Diagnostics.Debug.WriteLine("Shoe created");
-                System.Diagnostics.Debug.WriteLine(shoeCreated);
                 return Ok(shoeCreated);
             }
             catch (Exception)

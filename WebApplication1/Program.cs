@@ -1,3 +1,4 @@
+using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using Store99.AppContext;
 using Store99.Interfaces;
@@ -11,19 +12,19 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
-builder.Services.AddLogging(logging =>
-{
-    logging.AddConsole(); // Registrar en la consola
-                          // Otros proveedores de registro como AddFile, AddDebug, AddEventLog, etc.
-});
 // agregamos el automapper con esos parametros
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 builder.Services.AddControllers();
-// hacemos la inyección de independencia
+
+// hacemos la inyección de independencia de repositorio
 builder.Services.AddScoped<IShoeRepository, ShoeRepository>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
+
 // traemos el db context con las opciones
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -33,12 +34,38 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 var app = builder.Build();
 
+string cloudinaryApiKey = null;
+string cloudinaryApiSecret = null;
+string cloudinaryCloudName = null;
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // damos el path para secrets
+    builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
     app.UseSwagger();
     app.UseSwaggerUI();
+    cloudinaryApiKey = builder.Configuration["CLOUDINARY_API_KEY"];
+    cloudinaryApiSecret = builder.Configuration["CLOUDINARY_API_SECRET"];
+    cloudinaryCloudName = builder.Configuration["CLOUDINARY_CLOUD_NAME"];
+} else
+{
+    cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+    cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+    cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
 }
+
+if (cloudinaryApiKey == null || cloudinaryApiSecret == null || cloudinaryCloudName == null)
+{
+    throw new InvalidOperationException("Faltan variables de entorno necesarias para la configuración de Cloudinary.");
+}
+
+Account account = new Account(
+    cloudinaryCloudName,
+    cloudinaryApiKey,
+    cloudinaryApiSecret);
+Cloudinary cloudinary = new(account);
+cloudinary.Api.Secure = true;
 
 app.UseHttpsRedirection();
 

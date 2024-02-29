@@ -13,15 +13,14 @@ namespace Store99.Helper
         public ProfilesMapper()
         {
             // mapeamos las entitdades con el dto
-            CreateMap<Shoe, ShoeDto>();
+            CreateMap<Shoe, ShoeDto>()
                 // explicitamos la relación de muchos files a un shoe
-                // .ForMember(dest => dest.ShoeFiles, opt => opt.MapFrom(src => src.ShoeFile));
+                .ForMember(dest => dest.ShoeFiles, opt => opt.MapFrom(src => src.ShoeFile));
             CreateMap<ShoeDto, Shoe>();
             CreateMap<CreateShoeDto, Shoe>();
             CreateMap<Shoe, CreateShoeDto>();
             CreateMap<Brand, BrandDto>();
-
-            //CreateMap<ShoeFile, ShoeFileDto>();
+            CreateMap<ShoeFile, ShoeFileDto>();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Store99.Models
 
         // here we have the many to many reference
         public ICollection<StockShoeSize> StockShoesSizes { get; set; }
-        // public ICollection<ShoeFile> ShoeFile { get; set; }
+        public ICollection<ShoeFile> ShoeFile { get; set; }
 
         public override string ToString()
         {
