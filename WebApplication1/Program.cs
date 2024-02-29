@@ -1,7 +1,7 @@
 using CloudinaryDotNet;
 using Microsoft.EntityFrameworkCore;
 using Store99.AppContext;
-using Store99.Interfaces;
+using Store99.Interfaces.Repositories;
 using Store99.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);

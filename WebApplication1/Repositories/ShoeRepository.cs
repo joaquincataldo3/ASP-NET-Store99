@@ -5,7 +5,7 @@ using Store99.AppContext;
 using Store99.Controllers;
 using Store99.Dto.Sho;
 using Store99.Dto.Shoe;
-using Store99.Interfaces;
+using Store99.Interfaces.Repositories;
 using Store99.Models;
 
 // repository sirve para obtener los datos. una especie de servicio en nestjs o controlador en express
@@ -22,25 +22,26 @@ namespace Store99.Repositories
             _mapper = mapper;
         }
         // retornamos un icollection de shoes
-        public ICollection<ShoeDto> GetAllOnDemandShoes()
+        public ICollection<Shoe> GetAllOnDemandShoes()
         {
-            var shoes = _context.Shoes
+            ICollection<Shoe> shoes = _context.Shoes
+                .Where(s => s.IsInStock == false)
                 .Include(s => s.Brand)
+                .Include(f => f.ShoeFile)
                 .OrderBy(s => s.Id)
                 .ToList();
-            var mappedShoes = _mapper.Map<ICollection<ShoeDto>>(shoes);
-            return mappedShoes;
+            return shoes;
         }
 
-        public ICollection<ShoeDto> GetAllInStockShoes()
+        public ICollection<Shoe> GetAllInStockShoes()
         {
-            var shoesInStock = _context.Shoes
+            ICollection<Shoe> shoesInStock = _context.Shoes
+                .Where (s => s.IsInStock == true)
                 .Include(b => b.Brand)
-                //.Include(f => f.ShoeFile)
+                .Include(f => f.ShoeFile)
                 .OrderBy(s => s.IsInStock == true)
                 .ToList();
-            var shoesMapped = _mapper.Map<ICollection<ShoeDto>>(shoesInStock);
-            return shoesMapped;
+            return shoesInStock;
         }
 
         public ICollection<ShoeDto> GetShoesByBrand(int brandId)
