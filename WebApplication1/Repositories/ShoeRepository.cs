@@ -58,7 +58,6 @@ namespace Store99.Repositories
 
         public Shoe? GetShoeById(int shoeId)
         {
-
             // usamos el where con uno
             // first or default devuelve la primera que encuentre o null
             return _context.Shoes.Where(s => s.Id == shoeId).FirstOrDefault();

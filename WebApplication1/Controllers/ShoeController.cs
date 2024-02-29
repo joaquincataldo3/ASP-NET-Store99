@@ -84,22 +84,30 @@ namespace Store99.Controllers
         [ProducesResponseType(200, Type = typeof(Shoe))]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public IActionResult GetShoe(int shoeId)
+        public IActionResult GetShoe(string shoeId)
         {
-            try
+            bool isInt = int.TryParse(shoeId, out int parsedIntId);
+            IShoeServiceResponse response;
+            if (!isInt)
             {
-                var shoe = shoeRepository.GetShoeById(shoeId);
-                if (shoe == null)
+                response = new()
                 {
-                    return NotFound();
-                }
-                return Ok(shoe);
+                    Success = false,
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Message = "Invalid Shoe Id"
+                };
+                return BadRequest(response);
             }
-            catch (Exception)
+            response = shoeService.ValidateGetShoe(parsedIntId);
+            if(response.StatusCode == HttpStatusCode.NotFound)
             {
-                return StatusCode(500, "Internal server error"); ;
+                return NotFound(response);
             }
-
+            if(response.StatusCode == HttpStatusCode.InternalServerError) 
+            {
+                return StatusCode(500, "Internal server error");
+            }
+            return Ok(response);
         }
 
 
