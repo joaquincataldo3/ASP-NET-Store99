@@ -105,7 +105,7 @@ namespace Store99.Controllers
         [ProducesResponseType(409)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> CreateShoe([FromBody] CreateShoeDto createShoeDto)
+        public IActionResult CreateShoe([FromBody] CreateShoeDto createShoeDto)
         {
             if (!ModelState.IsValid)
             {
@@ -118,7 +118,7 @@ namespace Store99.Controllers
                 return Conflict("Shoe already exists");
             }
             try
-            {
+            {//
                 ShoeDto createNewShoe = shoeRepository.CreateShoe(createShoeDto);
                 ShoeDto shoeCreated = createNewShoe;
                 return Ok(shoeCreated);
