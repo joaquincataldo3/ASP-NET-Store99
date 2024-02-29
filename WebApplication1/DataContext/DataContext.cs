@@ -15,7 +15,7 @@ namespace Store99.AppContext
         public DbSet<Shoe> Shoes { get; set; }
         public DbSet<Size> Sizes { get; set; }
         public DbSet<StockShoeSize> StockShoeSizes { get; set; }
-        // public DbSet<ShoeFile> ShoeFiles { get; set; }
+        public DbSet<ShoeFile> ShoeFiles { get; set; }
 
         // esto lo usamos para referenciar las relaciones
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,18 +37,18 @@ namespace Store99.AppContext
                 .HasOne(b => b.Brand)
                 .WithMany(s => s.Shoes)
                 .HasForeignKey(s => s.BrandId);
-            //modelBuilder.Entity<Shoe>()
-            //    .HasMany(s => s.ShoeFile)
-            //    .WithOne(s => s.Shoe)
-            //    .HasForeignKey(sf => sf.ShoeId);
+            modelBuilder.Entity<Shoe>()
+                .HasMany(s => s.ShoeFile)
+                .WithOne(s => s.Shoe)
+                .HasForeignKey(sf => sf.ShoeId);
             modelBuilder.Entity<Brand>()
                .HasMany(s => s.Shoes)
                .WithOne(b => b.Brand)
                .HasForeignKey(s => s.BrandId);
-            //modelBuilder.Entity<ShoeFile>()
-            //   .HasOne(sf => sf.Shoe)
-            //   .WithMany(s => s.ShoeFile)
-            //   .HasForeignKey(sf => sf.ShoeId);
+            modelBuilder.Entity<ShoeFile>()
+               .HasOne(sf => sf.Shoe)
+               .WithMany(s => s.ShoeFile)
+               .HasForeignKey(sf => sf.ShoeId);
 
         }
     }
