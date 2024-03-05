@@ -5,7 +5,7 @@ using Store99.AppContext;
 using Store99.Controllers;
 using Store99.Dto.Sho;
 using Store99.Dto.Shoe;
-using Store99.Interfaces;
+using Store99.Interfaces.Repositories;
 using Store99.Models;
 
 // repository sirve para obtener los datos. una especie de servicio en nestjs o controlador en express
@@ -22,25 +22,26 @@ namespace Store99.Repositories
             _mapper = mapper;
         }
         // retornamos un icollection de shoes
-        public ICollection<ShoeDto> GetAllOnDemandShoes()
+        public ICollection<Shoe> GetAllOnDemandShoes()
         {
-            var shoes = _context.Shoes
+            ICollection<Shoe> shoes = _context.Shoes
+                .Where(s => s.IsInStock == false)
                 .Include(s => s.Brand)
+                .Include(f => f.ShoeFile)
                 .OrderBy(s => s.Id)
                 .ToList();
-            var mappedShoes = _mapper.Map<ICollection<ShoeDto>>(shoes);
-            return mappedShoes;
+            return shoes;
         }
 
-        public ICollection<ShoeDto> GetAllInStockShoes()
+        public ICollection<Shoe> GetAllInStockShoes()
         {
-            var shoesInStock = _context.Shoes
+            ICollection<Shoe> shoesInStock = _context.Shoes
+                .Where (s => s.IsInStock == true)
                 .Include(b => b.Brand)
-                //.Include(f => f.ShoeFile)
+                .Include(f => f.ShoeFile)
                 .OrderBy(s => s.IsInStock == true)
                 .ToList();
-            var shoesMapped = _mapper.Map<ICollection<ShoeDto>>(shoesInStock);
-            return shoesMapped;
+            return shoesInStock;
         }
 
         public ICollection<ShoeDto> GetShoesByBrand(int brandId)
@@ -58,7 +59,6 @@ namespace Store99.Repositories
 
         public Shoe? GetShoeById(int shoeId)
         {
-
             // usamos el where con uno
             // first or default devuelve la primera que encuentre o null
             return _context.Shoes.Where(s => s.Id == shoeId).FirstOrDefault();
@@ -70,24 +70,19 @@ namespace Store99.Repositories
             return _context.Shoes.Where(s => s.Name == name).FirstOrDefault();
         }
 
-        public ShoeDto CreateShoe(CreateShoeDto createShoeDto)
+        public bool CreateShoe(CreateShoeDto createShoeDto)
         {
-            System.Diagnostics.Debug.WriteLine(createShoeDto);
             try
             {
                 var mapDto = _mapper.Map<Shoe>(createShoeDto);
                 // esto devuelve la entidad, no el objeto en sí
                 var newShoe = _context.Add(mapDto);
                 SaveRecentChanges();
-                // accedemos a la entidad
-                int newShoeId = newShoe.Entity.Id;
-                Shoe shoeCreated = GetShoeById(newShoeId);
-                var newShoeMapped = _mapper.Map<ShoeDto>(shoeCreated);
-                return newShoeMapped;
+                return true;
             }
-            catch (Exception)
+            catch
             {
-                throw;
+                return false;
             }
             
         }
